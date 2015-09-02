@@ -1,5 +1,5 @@
 # GDriveJS
-## Web Javascript Google Drive Library
+## Web Javascript Google Drive API Library
 
 ### LOAD SCRIPT
 
