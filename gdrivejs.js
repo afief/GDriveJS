@@ -37,8 +37,41 @@ var GDriveJS = function() {
 		}, handleAuthResult);
 
 		function handleAuthResult(authResult) {
-			callback(!authResult.error, authResult);
+			if (!authResult.error) {
+				gapi.client.load('drive', 'v2', driveLoadResult);
+			} else {
+				callback(false);
+			}
+			function driveLoadResult() {
+				callback(true);
+			}
 		}
+	}
+	this.searchFiles = function(name, callback) {
+		var request = gapi.client.drive.files.list({
+			'maxResults' : 10,
+			'q': "mimeType != 'application/vnd.google-apps.folder' and title contains '" + name + "'"
+		});
+		request.execute(function(resp) {
+			callback(resp.items);
+		});
+	}
+	this.searchFolder = function(name, callback) {
+		var request = gapi.client.drive.files.list({
+			'maxResults' : 10,
+			'q': "mimeType = 'application/vnd.google-apps.folder' and title contains '" + name + "'"
+		});
+		request.execute(function(resp) {
+			callback(resp.items);
+		});
+	}
+	this.getFiles = function(callback) {
+		var request = gapi.client.drive.files.list({
+			'maxResults' : 10
+		});
+		request.execute(function(resp) {
+			callback(resp.items);
+		});
 	}
 }
 

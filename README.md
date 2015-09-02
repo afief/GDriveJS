@@ -14,7 +14,7 @@ How To Use:
 		gdrive.load(init);
 
 		function init() {
-			gdrive.checkAuth(function(res, data) {
+			gdrive.checkAuth(function(res) {
 				console.log(res, data)
 			});
 		}
