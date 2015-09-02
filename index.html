@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<title>GDrive</title>
+	
+</head>
+<body>
+	
+	
+	<script src="gdrivejs.js" type="text/javascript" charset="utf-8"></script>
+	<script type="text/javascript" charset="utf-8">
+		var gdrive = new GDriveJS();
+
+		gdrive.clientId = "934500972974-l4mjfm9ka3r2n9k2dkt1t8v7cfpqk8d2.apps.googleusercontent.com";
+		gdrive.scopes.push('https://www.googleapis.com/auth/drive.metadata.readonly');
+		gdrive.scopes.push('https://www.googleapis.com/auth/drive.file');
+
+		gdrive.load(init);
+
+		function init() {
+			gdrive.checkAuth(function(res, data) {
+				console.log(res, data)
+			});
+		}
+		
+	</script>
+
+</body>
+</html>
