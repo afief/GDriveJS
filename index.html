@@ -8,6 +8,8 @@
 </head>
 <body>
 	
+	<input type="file" onchange="fileChanged(this)">
+
 	
 	<script src="gdrivejs.js" type="text/javascript" charset="utf-8"></script>
 	<script type="text/javascript" charset="utf-8">
@@ -18,11 +20,13 @@
 		gdrive.scopes.push('https://www.googleapis.com/auth/drive.metadata.readonly');
 		gdrive.scopes.push('https://www.googleapis.com/auth/drive.file');
 
-		gdrive.load(init);
-
+		gdrive.load().then(init);
 		function init() {
-			gdrive.checkAuth(function(res) {
+			gdrive.checkAuth().then(function() {
+				console.info("AUTH SUCCESS");
 				getFiles();
+			}, function(err) {
+				console.info("AUTH FAILED");
 			});
 		}
 		function getFiles() {
@@ -32,11 +36,26 @@
 			//  	}
 			// });
 			
-			gdrive.searchFiles("squarezoo", function(res) {
-				for (var i = 0; i < res.length; i++) {
-			 		console.log(res[i].title, res[i].id);
+			gdrive.searchFolder("bcs").then(function(res) {
+				var items = res.items;
+				for (var i = 0; i < items.length; i++) {
+			 		console.log(items[i].title, items[i].id);
 			 	}
+			 	gdrive.createFolder("mamasayange", items[0].id).then(function(res) {
+					console.log("createFolder OK", res);
+				});
 			});
+		}
+		function fileChanged(fileData) {
+			// if (fileData.files.length <= 0) return;
+
+			// gdrive.searchFolder("bcs").then(function(res) {
+			// 	var items = res.items;
+			// 	for (var i = 0; i < items.length; i++) {
+			//  		console.log(items[i].title, items[i].id);
+			//  	}
+			//  	gdrive.uploadFile(fileData.files[0], items[0].id);
+			// });
 		}
 		
 	</script>
