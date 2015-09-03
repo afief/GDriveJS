@@ -51,6 +51,18 @@
 
 ---
 
+#### OPEN PICKER
+
+	gdrive.openPicker();
+
+![picker](https://cloud.githubusercontent.com/assets/1335454/9651272/4a2f5e20-5238-11e5-8da2-7f6198f5168b.JPG)
+
+you must set appId before load gdrivejs.
+
+	gdrive.appId = "[APP ID]";
+
+---
+
 ### SEARCH FILE
 
 	gdrive.searchFiles(filename, maxResults, nextPageToken, isExact).then(function(response) {
@@ -88,11 +100,3 @@ if parentFolderId not specified, folder located at root
 Response is Promise Object with Created Folder Metadata
 
 ---
-
-#### OPEN PICKER
-
-	gdrive.openPicker();
-
-you must set appId before load gdrivejs.
-
-	gdrive.appId = "[APP ID]";
