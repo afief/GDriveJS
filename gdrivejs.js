@@ -2,9 +2,17 @@ var GDriveJS = function() {
 
 	var that = this;
 	var loaded = false;
+	var isPickerLoaded = false;
+	var oAuthToken = "";
 
 	this.clientId = "";
+	this.appId = "";
 	this.scopes = [];
+
+	function onPickerApiLoad() {
+		console.info("picker api loaded");
+		isPickerLoaded = true;
+	}
 
 	this.load = function() {
 		var resPromise = function(resolve, reject) {
@@ -18,8 +26,10 @@ var GDriveJS = function() {
 
 			window.addEventListener("gapiLoaded", onGapiLoaded);
 			function onGapiLoaded() {
+				console.info("gapi loaded");
 				loaded = true;
 				resolve();
+				gapi.load('auth');
 			}
 		}
 		return new Promise(resPromise);
@@ -36,16 +46,21 @@ var GDriveJS = function() {
 			{
 				'client_id': that.clientId,
 				'scope': that.scopes,
-				'immediate': true
+				'immediate': false
 			}, handleAuthResult);
 
 			function handleAuthResult(authResult) {
 				if (!authResult.error) {
+					oAuthToken = authResult.access_token;
+					console.info("auth success ", oAuthToken);
+
 					gapi.client.load('drive', 'v2', driveLoadResult);
+					gapi.load('picker', {'callback': onPickerApiLoad});
 				} else {
 					reject("error");
 				}
 				function driveLoadResult() {
+					console.info("drive api loaded");
 					resolve(true);
 				}
 			}
@@ -55,6 +70,11 @@ var GDriveJS = function() {
 	this.searchFiles = function(name, maxResults, nextPageToken, isExact) {
 		return new Promise(function(res, rej) {
 			maxResults = maxResults || 10;
+
+			if (!loaded) {
+				reject("not_loaded");
+				return;
+			}
 
 			var params = {
 				maxResults : maxResults,
@@ -80,6 +100,11 @@ var GDriveJS = function() {
 		return new Promise(function(res, rej) {
 			maxResults = maxResults || 10;
 
+			if (!loaded) {
+				reject("not_loaded");
+				return;
+			}
+
 			var params = {
 				maxResults : maxResults,
 				q: "mimeType = 'application/vnd.google-apps.folder' and title contains '" + name + "'"
@@ -101,6 +126,12 @@ var GDriveJS = function() {
 	}
 	this.getFiles = function() {
 		return new Promise(function(res, rej) {
+
+			if (!loaded) {
+				reject("not_loaded");
+				return;
+			}
+
 			var request = gapi.client.drive.files.list({
 				'maxResults' : 10
 			});
@@ -116,6 +147,11 @@ var GDriveJS = function() {
 	this.uploadFile = function(fileData, parentId) {
 
 		var resPromise = function(resolve, reject) {
+
+			if (!loaded) {
+				reject("not_loaded");
+				return;
+			}
 
 			var boundary = '-------314159265358979323846';
 			var delimiter = "\r\n--" + boundary + "\r\n";
@@ -172,6 +208,11 @@ var GDriveJS = function() {
 	this.createFolder = function(folderName, parentId) {
 		var resPromise = function(resolve, reject) {
 
+			if (!loaded) {
+				reject("not_loaded");
+				return;
+			}
+
 			var boundary = '-------314159265358979323846';
 			var delimiter = "\r\n--" + boundary + "\r\n";
 			var close_delim = "\r\n--" + boundary + "--";
@@ -204,6 +245,36 @@ var GDriveJS = function() {
 			};
 
 			request.execute(callback);
+		}
+		return new Promise(resPromise);
+	}
+
+	this.openPicker = function() {
+		var resPromise = function(resolve, reject) {
+			if (isPickerLoaded && oAuthToken) {
+				var view = new google.picker.View(google.picker.ViewId.DOCS);
+				
+				var picker = new google.picker.PickerBuilder()				
+				.enableFeature(google.picker.Feature.MULTISELECT_ENABLED)
+				.setAppId(that.appId)
+				.setOAuthToken(oAuthToken)
+				.addView(view)
+				.addView(new google.picker.DocsUploadView())
+				.setCallback(pickerCallback)
+				.build();
+
+				picker.setVisible(true);
+			} else {
+				reject("picker or oauth not loaded");
+			}
+			function pickerCallback(data) {
+				console.info(data);
+				if (data.action == "picked") {
+					resolve(data);
+				} else if ((data.action == "cancel") || (data.action == "error")) {
+					reject(data);
+				}
+			}
 		}
 		return new Promise(resPromise);
 	}
